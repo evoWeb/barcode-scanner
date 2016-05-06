@@ -28,15 +28,15 @@
 		// variable will contain stream object once its captured
 		stream: null,
 		streamRunning: false,
-		debug: false,
+		debugContainer: false,
 
 		canvas: null,
 		context: null,
-		canvasUpdateInterval: 0
+		canvasUpdateInterval: 0,
+		updateIntervalLength: 40
 	};
 
 	function initialize() {
-		module.registerNewElement();
 		module.initializeGetUserMedia();
 
 		module.container = $(module.namespace);
@@ -52,11 +52,19 @@
 		}
 	}
 
-	// until caniuse does not show green for all browsers this isn't in use
-	module.registerNewElement = function () {
+	/**
+	 * as long caniuse.com does not show green for all browsers not used
+	 */
+	module._registerNewElement = function () {
 		module.element = root.document.registerElement('evoweb-barcode-scanner');
 	};
 
+	/**
+	 * initialization of getUserMedia in navigator to be able to use it with
+	 * unified api
+	 *
+	 * @return void
+	 */
 	module.initializeGetUserMedia = function () {
 		navigator.getUserMedia = navigator.getUserMedia ||
 			navigator.webkitGetUserMedia ||
@@ -64,12 +72,17 @@
 			navigator.msGetUserMedia;
 	};
 
-
+	/**
+	 * Add a canvas to display the stream content and acts as base for barcode
+	 * detection and decoding
+	 *
+	 * @return void
+	 */
 	module.getCanvas = function () {
-		var $canvas = module.container.find('canvas:eq(0)');
+		var $canvas = module.container.find('canvas.display:eq(0)');
 
 		if ($canvas.length === 0) {
-			$canvas = $('<canvas/>');
+			$canvas = $('<canvas class="display"/>');
 			module.container.append($canvas);
 		}
 
@@ -80,6 +93,12 @@
 		module.context = $canvas[0].getContext('2d');
 	};
 
+	/**
+	 * Add an overlay over the display canvas to have a target frame with
+	 * horizontal line
+	 *
+	 * @return void
+	 */
 	module.getOverlay = function () {
 		var $overlay = module.container.find('canvas.overlay:eq(0)');
 
@@ -112,17 +131,35 @@
 		module.video = $video[0];
 	};
 
-
+	/**
+	 * Add debugging output container
+	 *
+	 * @return void
+	 */
 	module.enableDebugMode = function () {
 		if (module.container.data('debug') === 1) {
-			module.debug = $('<div class="debug"/>');
+			module.debugContainer = $('<div class="debug">debug on</div>');
 
-			module.container.before(module.debug);
-
-			module.debug.html('debug on');
+			module.container.before(module.debugContainer);
 		}
 	};
 
+	/**
+	 * Debug the message in an container
+	 *
+	 * @param {string} message
+	 * @param {int} code
+	 * @return void
+	 */
+	module.debug = function (message, code) {
+		if (module.debugContainer !== false) {
+			module.debugContainer.html(message.replace('%d', code));
+		}
+	};
+
+	/**
+	 * Add start stop toggle button after container and attach click event
+	 */
 	module.addStartStopButton = function () {
 		var $startStop = $('<button class="startStop">Toggle video</button>').on('click', function () {
 			if (module.streamRunning) {
@@ -135,6 +172,17 @@
 		module.container.after($startStop);
 	};
 
+	/**
+	 * Get user media as stream and attach it to an unattached video element
+	 * from which the content gets rendered as image on a canvas.
+	 *
+	 * Sets streamRunning flag to be able to detect on that and stop the stream
+	 * accordingly on toggle.
+	 *
+	 * Start canvas update interval in the end
+	 *
+	 * @return void
+	 */
 	module.attachVideoCapture = function () {
 		navigator.getUserMedia(
 			{
@@ -143,6 +191,8 @@
 			},
 			function (localStream) {
 				module.stream = localStream;
+
+				// detect if createObjectURL is available and use it else the stream directly
 				module.video.src = root.URL.createObjectURL ? root.URL.createObjectURL(module.stream) : module.stream;
 				module.video.play();
 
@@ -151,13 +201,15 @@
 				module.startCanvasUpdateInterval();
 			},
 			function (error) {
-				if (module.debug !== false) {
-					module.debug.html('Video capture error: ', error.code);
-				}
+				module.debug('Video capture error: %d', error.code);
 			}
 		);
 	};
 
+	/**
+	 * Stop canvas update interval, video play and stream capture. Clears the
+	 * canvas and the stream running flag
+	 */
 	module.detachVideoCapture = function () {
 		module.stopCanvasUpdateInterval();
 
@@ -170,14 +222,29 @@
 		module.streamRunning = false;
 	};
 
+	/**
+	 * Update content of canvas with video content
+	 *
+	 * @return void
+	 */
 	module.updateCanvas = function () {
 		module.context.drawImage(module.video, 0, 0, module.canvas.width(), module.canvas.height());
 	};
 
+	/**
+	 * Starts an interval which calls the update canvas method
+	 *
+	 * @return void
+	 */
 	module.startCanvasUpdateInterval = function () {
-		module.canvasUpdateInterval = setInterval(function() { module.updateCanvas(); }, 100);
+		module.canvasUpdateInterval = setInterval(module.updateCanvas, module.updateIntervalLength);
 	};
 
+	/**
+	 * Clears interval that calls the update canvas method
+	 *
+	 * @return void
+	 */
 	module.stopCanvasUpdateInterval = function () {
 		clearInterval(module.canvasUpdateInterval);
 	};
