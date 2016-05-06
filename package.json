@@ -1,14 +1,22 @@
 {
-	"name": "evoweb-barcode-scanner",
-	"description": "JavaScript Barcode Scanner with Webcam",
-	"version": "0.0.1",
-	"license": "GPL-3.0",
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/evoweb/barcode-scanner.git"
-	},
+  "name": "evoweb-barcode-scanner",
+  "description": "JavaScript Barcode Scanner with Webcam",
+  "version": "0.0.1",
+  "license": "GPL-3.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/evoweb/barcode-scanner.git"
+  },
+  "dependencies": {
+    "jquery": "*"
+  },
+  "devDependencies": {
+    "node-sass": "latest"
+  },
+  "scripts": {
+    "build:css": "node-sass --output-style expanded --source-comments true Resources/Sass/main.scss Resources/Css/main.css",
+    "build:css:dev": "node-sass --output-style compressed  Resources/Sass/main.scss Resources/Css/main.min.css",
 
-	"dependencies": {
-		"jquery": "*"
-	}
+    "build": "npm run build:css && npm run build:css:dev"
+  }
 }
