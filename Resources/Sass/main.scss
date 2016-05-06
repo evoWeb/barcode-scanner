@@ -1,3 +1,5 @@
+$width: 400px;
+
 .hidden {
 	display: none;
 }
@@ -5,8 +7,9 @@
 .evoweb-barcode-scanner {
 	display: block;
 	position: relative;
-	height: 480px;
-	width: 640px;
+	width: $width;
+	// 73% of the width
+	height: calc(0.73 * #{$width});
 
 	video {
 		position: absolute;
@@ -18,13 +21,17 @@
 	}
 
 	canvas {
+		z-index: 2;
+	}
+
+	canvas.overlay {
 		border: 2px solid #000;
 		position: absolute;
 		top: 10%;
 		left: 10%;
 		height: 80%;
 		width: 80%;
-		z-index: 2;
+		z-index: 3;
 	}
 }
 

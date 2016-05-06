@@ -1,17 +1,17 @@
-/* line 1, /home/www/javascript/barcode_scanner/htdocs/Resources/Sass/main.scss */
+/* line 3, /home/www/javascript/barcode_scanner/htdocs/Resources/Sass/main.scss */
 .hidden {
   display: none;
 }
 
-/* line 5, /home/www/javascript/barcode_scanner/htdocs/Resources/Sass/main.scss */
+/* line 7, /home/www/javascript/barcode_scanner/htdocs/Resources/Sass/main.scss */
 .evoweb-barcode-scanner {
   display: block;
   position: relative;
-  height: 480px;
-  width: 640px;
+  width: 400px;
+  height: calc(0.73 * 400px);
 }
 
-/* line 11, /home/www/javascript/barcode_scanner/htdocs/Resources/Sass/main.scss */
+/* line 14, /home/www/javascript/barcode_scanner/htdocs/Resources/Sass/main.scss */
 .evoweb-barcode-scanner video {
   position: absolute;
   top: 0;
@@ -21,18 +21,23 @@
   z-index: 1;
 }
 
-/* line 20, /home/www/javascript/barcode_scanner/htdocs/Resources/Sass/main.scss */
+/* line 23, /home/www/javascript/barcode_scanner/htdocs/Resources/Sass/main.scss */
 .evoweb-barcode-scanner canvas {
+  z-index: 2;
+}
+
+/* line 27, /home/www/javascript/barcode_scanner/htdocs/Resources/Sass/main.scss */
+.evoweb-barcode-scanner canvas.overlay {
   border: 2px solid #000;
   position: absolute;
   top: 10%;
   left: 10%;
   height: 80%;
   width: 80%;
-  z-index: 2;
+  z-index: 3;
 }
 
-/* line 31, /home/www/javascript/barcode_scanner/htdocs/Resources/Sass/main.scss */
+/* line 38, /home/www/javascript/barcode_scanner/htdocs/Resources/Sass/main.scss */
 .debug {
   border: 1px solid grey;
   padding: 5px;

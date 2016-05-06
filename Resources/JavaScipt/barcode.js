@@ -34,23 +34,26 @@
 	};
 
 	function initialize() {
-		module.registerNewsElement();
+		module.registerNewElement();
 		module.initializeGetUserMedia();
 
-		$(root.document).ready(function () {
-			module.container = $(module.namespace);
-			module.getVideo();
-			//module.getCanvas();
-			module.getOverlay();
+		module.container = $(module.namespace);
+		module.getCanvas();
+		module.getVideo();
+		module.getOverlay();
 
-			module.addStartStopButton();
-			module.enableDebugMode();
+		module.addStartStopButton();
+		module.enableDebugMode();
 
-			if (module.container.data('autostart') === 1) {
-				module.attachVideoCapture();
-			}
-		});
+		if (module.container.data('autostart') === 1) {
+			module.attachVideoCapture();
+		}
 	}
+
+	// until caniuse does not show green for all browsers this isn't in use
+	module.registerNewElement = function () {
+		module.element = root.document.registerElement('evoweb-barcode-scanner');
+	};
 
 	module.initializeGetUserMedia = function () {
 		navigator.getUserMedia = navigator.getUserMedia ||
@@ -60,9 +63,19 @@
 	};
 
 
-	// until caniuse does not show green for all browsers this isn't in use
-	module.registerNewsElement = function () {
-		module.element = root.document.registerElement('evoweb-barcode-scanner');
+	module.getCanvas = function () {
+		var $canvas = module.container.find('canvas:eq(0)');
+
+		if ($canvas.length === 0) {
+			$canvas = $('<canvas/>');
+			module.container.append($canvas);
+		}
+
+		module.canvas = $canvas;
+		module.canvas.attr('width', module.container.width());
+		module.canvas.attr('height', module.container.height());
+
+		module.context = $canvas[0].getContext('2d');
 	};
 
 	module.getVideo = function () {
@@ -76,21 +89,6 @@
 		module.video = $video;
 		module.video.attr('width', module.video.width());
 		module.video.attr('height', module.video.height());
-	};
-
-	module.getCanvas = function () {
-		var $canvas = module.container.find('canvas:eq(0)');
-
-		if ($canvas.length === 0) {
-			$canvas = $('<canvas/>');
-			module.container.append($canvas);
-		}
-
-		module.canvas = $canvas;
-		module.canvas.attr('width', module.canvas.width());
-		module.canvas.attr('height', module.canvas.height());
-
-		module.context = $canvas[0].getContext('2d');
 	};
 
 	module.getOverlay = function () {
@@ -112,6 +110,28 @@
 		context.stroke();
 	};
 
+
+	module.enableDebugMode = function () {
+		if (module.container.data('debug') === 1) {
+			module.debug = $('<div class="debug"/>');
+
+			module.container.before(module.debug);
+
+			module.debug.html('debug on');
+		}
+	};
+
+	module.addStartStopButton = function () {
+		var $startStop = $('<button class="startStop">Toggle video</button>').on('click', function () {
+			if (module.streamRunning) {
+				module.detachVideoCapture();
+			} else {
+				module.attachVideoCapture();
+			}
+		});
+
+		module.container.after($startStop);
+	};
 
 	module.attachVideoCapture = function () {
 		var video = module.video[0],
@@ -145,29 +165,6 @@
 		track.stop();
 
 		module.streamRunning = false;
-	};
-
-
-	module.addStartStopButton = function () {
-		var $startStop = $('<button class="startStop">Toggle video</button>').on('click', function () {
-			if (module.streamRunning) {
-				module.detachVideoCapture();
-			} else {
-				module.attachVideoCapture();
-			}
-		});
-
-		module.container.after($startStop);
-	};
-
-	module.enableDebugMode = function () {
-		if (module.container.data('debug') === 1) {
-			module.debug = $('<div class="debug"/>');
-
-			module.container.before(module.debug);
-
-			module.debug.html('debug on');
-		}
 	};
 
 

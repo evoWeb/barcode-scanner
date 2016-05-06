@@ -3,6 +3,24 @@
   "description": "JavaScript Barcode Scanner with Webcam",
   "version": "0.0.1",
   "license": "GPL-3.0",
+  "author": {
+    "name": "Sebastian Fischer",
+    "email": "javascript@evoweb.de",
+    "url": "http://www.evoweb.de/"
+  },
+  "keywords": [
+    "barcode",
+    "reader",
+    "Code128",
+    "Code93",
+    "Code39",
+    "EAN-13"
+  ],
+  "bugs": {
+    "url": "https://github.com/evoweb/barcode-scanner/issues"
+  },
+  "homepage": "https://github.com/evoweb/barcode-scanner",
+
   "repository": {
     "type": "git",
     "url": "git+https://github.com/evoweb/barcode-scanner.git"
