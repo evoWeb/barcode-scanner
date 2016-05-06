@@ -24,13 +24,15 @@
 		namespace: '.evoweb-barcode-scanner',
 		container: null,
 		video: null,
-		canvas: null,
-		context: null,
-		debug: false,
 
 		// variable will contain stream object once its captured
 		stream: null,
-		streamRunning: false
+		streamRunning: false,
+		debug: false,
+
+		canvas: null,
+		context: null,
+		canvasUpdateInterval: 0
 	};
 
 	function initialize() {
@@ -39,8 +41,8 @@
 
 		module.container = $(module.namespace);
 		module.getCanvas();
-		module.getVideo();
 		module.getOverlay();
+		module.getVideo();
 
 		module.addStartStopButton();
 		module.enableDebugMode();
@@ -78,19 +80,6 @@
 		module.context = $canvas[0].getContext('2d');
 	};
 
-	module.getVideo = function () {
-		var $video = module.container.find('video:eq(0)');
-
-		if ($video.length === 0) {
-			$video = $('<video/>');
-			module.container.append($video);
-		}
-
-		module.video = $video;
-		module.video.attr('width', module.video.width());
-		module.video.attr('height', module.video.height());
-	};
-
 	module.getOverlay = function () {
 		var $overlay = module.container.find('canvas.overlay:eq(0)');
 
@@ -99,15 +88,28 @@
 			module.container.append($overlay);
 		}
 
-		$overlay.attr('width', $overlay.width());
-		$overlay.attr('height', $overlay.height());
+		$overlay.attr('width', module.container.width());
+		$overlay.attr('height', module.container.height());
 
 		var context = $overlay[0].getContext('2d'),
-			halfHeight = Math.floor($overlay.height() / 2);
+			halfHeight = Math.floor(module.container.height() / 2);
 		context.beginPath();
 		context.moveTo(0, halfHeight);
-		context.lineTo($overlay.width(), halfHeight);
+		context.lineTo(module.container.width(), halfHeight);
 		context.stroke();
+	};
+
+	/**
+	 * Create video element that is not attached to the dom to only be able to
+	 * captcha the stream for usage in canvas
+	 *
+	 * @return void
+	 */
+	module.getVideo = function () {
+		var $video = $('<video/>')
+			.attr('width', module.container.width())
+			.attr('height', module.container.height());
+		module.video = $video[0];
 	};
 
 
@@ -134,39 +136,51 @@
 	};
 
 	module.attachVideoCapture = function () {
-		var video = module.video[0],
-			videoConfig = {"video": true, "audio": false},
-			errBack = function (error) {
-				if (module.debug !== false) {
-					module.debug.html("Video capture error: ", error.code);
-				}
-			};
-
 		navigator.getUserMedia(
-			videoConfig,
+			{
+				'video': true,
+				'audio': false
+			},
 			function (localStream) {
 				module.stream = localStream;
-				video.src = root.URL.createObjectURL ? root.URL.createObjectURL(localStream) : localStream;
-				video.play();
-			},
-			errBack
-		);
+				module.video.src = root.URL.createObjectURL ? root.URL.createObjectURL(module.stream) : module.stream;
+				module.video.play();
 
-		module.streamRunning = true;
+				module.streamRunning = true;
+
+				module.startCanvasUpdateInterval();
+			},
+			function (error) {
+				if (module.debug !== false) {
+					module.debug.html('Video capture error: ', error.code);
+				}
+			}
+		);
 	};
 
 	module.detachVideoCapture = function () {
-		var video = module.video[0];
+		module.stopCanvasUpdateInterval();
 
-		video.src = '';
-		video.pause();
+		module.video.pause();
 
-		var track = module.stream.getTracks()[0];
-		track.stop();
+		module.stream.getTracks()[0].stop();
+
+		module.context.clearRect(0, 0, module.container.width(), module.container.height());
 
 		module.streamRunning = false;
 	};
 
+	module.updateCanvas = function () {
+		module.context.drawImage(module.video, 0, 0, module.canvas.width(), module.canvas.height());
+	};
+
+	module.startCanvasUpdateInterval = function () {
+		module.canvasUpdateInterval = setInterval(function() { module.updateCanvas(); }, 100);
+	};
+
+	module.stopCanvasUpdateInterval = function () {
+		clearInterval(module.canvasUpdateInterval);
+	};
 
 	initialize();
 
