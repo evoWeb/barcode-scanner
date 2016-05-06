@@ -1,0 +1,14 @@
+{
+	"name": "evoweb-barcode-scanner",
+	"description": "JavaScript Barcode Scanner with Webcam",
+	"version": "0.0.1",
+	"license": "GPL-3.0",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/evoweb/barcode-scanner.git"
+	},
+
+	"dependencies": {
+		"jquery": "*"
+	}
+}

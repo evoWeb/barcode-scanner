@@ -1,0 +1,16 @@
+.hidden {
+	display: none;
+}
+
+.evoweb-barcode-scanner {
+	position: relative;
+}
+
+.evoweb-barcode-scanner video {
+	height: 480px;
+	width: 640px;
+}
+.evoweb-barcode-scanner canvas {
+	height: 480px;
+	width: 640px;
+}
