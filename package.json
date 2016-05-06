@@ -8,7 +8,8 @@
     "url": "git+https://github.com/evoweb/barcode-scanner.git"
   },
   "dependencies": {
-    "jquery": "*"
+    "jquery": "*",
+    "requirejs": "*"
   },
   "devDependencies": {
     "node-sass": "latest"

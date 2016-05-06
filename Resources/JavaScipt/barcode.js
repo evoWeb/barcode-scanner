@@ -12,7 +12,7 @@
 		}
 	} else if (typeof define === 'function' && define.amd) {
 		// AMD module is defined
-		define(['jquery'], function ($, root) {
+		define(['jquery'], function ($) {
 			return factory($, root);
 		});
 	} else {
@@ -35,19 +35,33 @@
 
 	function initialize() {
 		module.registerNewsElement();
+		module.initializeGetUserMedia();
 
-		$(document).ready(function () {
+		$(root.document).ready(function () {
 			module.container = $(module.namespace);
 			module.getVideo();
-			module.getCanvas();
+			//module.getCanvas();
+			module.getOverlay();
 
 			module.addStartStopButton();
-			module.attachVideoCapture();
 			module.enableDebugMode();
+
+			if (module.container.data('autostart') === 1) {
+				module.attachVideoCapture();
+			}
 		});
 	}
 
-	module.registerNewsElement = function() {
+	module.initializeGetUserMedia = function () {
+		navigator.getUserMedia = navigator.getUserMedia ||
+			navigator.webkitGetUserMedia ||
+			navigator.mozGetUserMedia ||
+			navigator.msGetUserMedia;
+	};
+
+
+	// until caniuse does not show green for all browsers this isn't in use
+	module.registerNewsElement = function () {
 		module.element = root.document.registerElement('evoweb-barcode-scanner');
 	};
 
@@ -77,41 +91,47 @@
 		module.canvas.attr('height', module.canvas.height());
 
 		module.context = $canvas[0].getContext('2d');
+	};
 
-		module.context.beginPath();
-		module.context.moveTo(0, module.canvas.height() / 2);
-		module.context.lineTo(module.canvas.width(), module.canvas.height() / 2);
-		module.context.stroke();
+	module.getOverlay = function () {
+		var $overlay = module.container.find('canvas.overlay:eq(0)');
+
+		if ($overlay.length === 0) {
+			$overlay = $('<canvas class="overlay"/>');
+			module.container.append($overlay);
+		}
+
+		$overlay.attr('width', $overlay.width());
+		$overlay.attr('height', $overlay.height());
+
+		var context = $overlay[0].getContext('2d'),
+			halfHeight = Math.floor($overlay.height() / 2);
+		context.beginPath();
+		context.moveTo(0, halfHeight);
+		context.lineTo($overlay.width(), halfHeight);
+		context.stroke();
 	};
 
 
 	module.attachVideoCapture = function () {
 		var video = module.video[0],
-			videoObj = {"video": true},
+			videoConfig = {"video": true, "audio": false},
 			errBack = function (error) {
-				console.log("Video capture error: ", error.code);
+				if (module.debug !== false) {
+					module.debug.html("Video capture error: ", error.code);
+				}
 			};
 
-		// Put video listeners into place
-		if (navigator.getUserMedia) { // Standard
-			navigator.getUserMedia(videoObj, function (localStream) {
+		navigator.getUserMedia(
+			videoConfig,
+			function (localStream) {
 				module.stream = localStream;
-				video.src = localStream;
+				video.src = root.URL.createObjectURL ? root.URL.createObjectURL(localStream) : localStream;
 				video.play();
-			}, errBack);
-		} else if (navigator.webkitGetUserMedia) { // WebKit-prefixed
-			navigator.webkitGetUserMedia(videoObj, function (localStream) {
-				module.stream = localStream;
-				video.src = root.URL.createObjectURL(localStream);
-				video.play();
-			}, errBack);
-		} else if (navigator.mozGetUserMedia) { // Firefox-prefixed
-			navigator.mozGetUserMedia(videoObj, function (localStream) {
-				module.stream = localStream;
-				video.src = root.URL.createObjectURL(localStream);
-				video.play();
-			}, errBack);
-		}
+			},
+			errBack
+		);
+
 		module.streamRunning = true;
 	};
 
@@ -128,7 +148,7 @@
 	};
 
 
-	module.addStartStopButton = function() {
+	module.addStartStopButton = function () {
 		var $startStop = $('<button class="startStop">Toggle video</button>').on('click', function () {
 			if (module.streamRunning) {
 				module.detachVideoCapture();
@@ -140,7 +160,7 @@
 		module.container.after($startStop);
 	};
 
-	module.enableDebugMode = function() {
+	module.enableDebugMode = function () {
 		if (module.container.data('debug') === 1) {
 			module.debug = $('<div class="debug"/>');
 
