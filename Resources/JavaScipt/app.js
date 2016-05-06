@@ -26,6 +26,8 @@
 		video: null,
 		canvas: null,
 		context: null,
+		debug: false,
+
 		// variable will contain stream object once its captured
 		stream: null,
 		streamRunning: false
@@ -41,6 +43,7 @@
 
 			module.addStartStopButton();
 			module.attachVideoCapture();
+			module.enableDebugMode();
 		});
 	}
 
@@ -135,6 +138,16 @@
 		});
 
 		module.container.after($startStop);
+	};
+
+	module.enableDebugMode = function() {
+		if (module.container.data('debug') === 1) {
+			module.debug = $('<div class="debug"/>');
+
+			module.container.before(module.debug);
+
+			module.debug.html('debug on');
+		}
 	};
 
 
