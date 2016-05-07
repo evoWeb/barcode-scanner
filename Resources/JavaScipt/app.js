@@ -5,4 +5,4 @@ requirejs.config({
 		Evoweb: '.'
 	}
 });
-requirejs(['Evoweb/Barcode']);
+requirejs(['Evoweb/BarcodeScanner']);
