@@ -7,6 +7,10 @@ $width: 400px;
 	// 73% of the width
 	height: calc(0.73 * #{$width});
 
+	&.disabled {
+		height: auto;
+	}
+
 	canvas {
 		position: absolute;
 		top: 0;

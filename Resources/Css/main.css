@@ -7,6 +7,11 @@
 }
 
 /* line 10, /home/www/javascript/barcode_scanner/htdocs/Resources/Sass/main.scss */
+.evoweb-barcode-scanner.disabled {
+  height: auto;
+}
+
+/* line 14, /home/www/javascript/barcode_scanner/htdocs/Resources/Sass/main.scss */
 .evoweb-barcode-scanner canvas {
   position: absolute;
   top: 0;
@@ -16,7 +21,7 @@
   z-index: 1;
 }
 
-/* line 19, /home/www/javascript/barcode_scanner/htdocs/Resources/Sass/main.scss */
+/* line 23, /home/www/javascript/barcode_scanner/htdocs/Resources/Sass/main.scss */
 .evoweb-barcode-scanner canvas.overlay {
   border: 2px solid #000;
   position: absolute;
@@ -27,7 +32,7 @@
   z-index: 2;
 }
 
-/* line 30, /home/www/javascript/barcode_scanner/htdocs/Resources/Sass/main.scss */
+/* line 34, /home/www/javascript/barcode_scanner/htdocs/Resources/Sass/main.scss */
 .debug {
   border: 1px solid grey;
   padding: 5px;

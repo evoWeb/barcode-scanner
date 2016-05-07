@@ -131,6 +131,7 @@
 		module.video = $video[0];
 	};
 
+
 	/**
 	 * Add debugging output container
 	 *
@@ -156,6 +157,20 @@
 			module.debugContainer.html(message.replace('%d', code));
 		}
 	};
+
+	module.shutDownControl = function () {
+		var message = 'No webcam available to capture from.';
+		if (module.debugContainer) {
+			module.debug(message, 0);
+			return;
+		}
+
+		module.video = null;
+		module.container.find('canvas').remove();
+		module.container.parent().find('.startStop').remove();
+		module.container.addClass('disabled').append(message);
+	};
+
 
 	/**
 	 * Add start stop toggle button after container and attach click event
@@ -202,6 +217,7 @@
 			},
 			function (error) {
 				module.debug('Video capture error: %d', error.code);
+				module.shutDownControl();
 			}
 		);
 	};
