@@ -2,18 +2,21 @@
 define(['jquery', 'window', 'Evoweb/CaptureDevice'], function ($, root, CaptureDevice) {
 	function BarcodeScanner() {
 		this.namespace = '.evoweb-barcode-scanner';
-		this.container = null;
 		this.canvas = null;
 		this.context = null;
 
-		this.captureDevice = null;
 		this.video = null;
 		this.debugContainer = false;
 
+		this.container = $(this.namespace);
+		this.captureDevice = new CaptureDevice(
+			this,
+			this.container.width(),
+			this.container.height()
+		);
+
 		this.initializeGetUserMedia();
 
-		this.container = $(this.namespace);
-		this.captureDevice = new CaptureDevice(this);
 		this.getCanvas();
 		this.getOverlay();
 
@@ -24,13 +27,6 @@ define(['jquery', 'window', 'Evoweb/CaptureDevice'], function ($, root, CaptureD
 			this.captureDevice.start();
 		}
 	}
-
-	/**
-	 * as long caniuse.com does not show green for all browsers not used
-	 */
-	BarcodeScanner.prototype._registerNewElement = function () {
-		this.element = root.document.registerElement('evoweb-barcode-scanner');
-	};
 
 	/**
 	 * initialization of getUserMedia in navigator to be able to use it with
@@ -52,18 +48,27 @@ define(['jquery', 'window', 'Evoweb/CaptureDevice'], function ($, root, CaptureD
 	 * @return void
 	 */
 	BarcodeScanner.prototype.getCanvas = function () {
-		var $canvas = this.container.find('canvas.display:eq(0)');
+		var self = this,
+			$canvas = self.container.find('canvas.display:eq(0)');
 
 		if ($canvas.length === 0) {
 			$canvas = $('<canvas class="display"/>');
-			this.container.append($canvas);
+			self.container.append($canvas);
 		}
 
-		this.canvas = $canvas;
-		this.canvas.attr('width', this.container.width());
-		this.canvas.attr('height', this.container.height());
+		self.canvas = $canvas;
+		self.canvas.attr('width', self.container.width());
+		self.canvas.attr('height', self.container.height());
 
-		this.context = $canvas[0].getContext('2d');
+		self.context = $canvas[0].getContext('2d');
+
+		$(self)
+			.on('videoCaptured', function (event, video) {
+				self.updateCanvas(video);
+			})
+			.on('shutdown', function () {
+				self.shutDownControl();
+			});
 	};
 
 	/**
@@ -98,10 +103,16 @@ define(['jquery', 'window', 'Evoweb/CaptureDevice'], function ($, root, CaptureD
 	 * @return void
 	 */
 	BarcodeScanner.prototype.enableDebugMode = function () {
-		if (this.container.data('debug') === 1) {
-			this.debugContainer = $('<div class="debug">debug on</div>');
+		var self = this;
 
-			this.container.before(this.debugContainer);
+		if (self.container.data('debug') === 1) {
+			self.debugContainer = $('<div class="debug">debug on</div>');
+
+			self.container.before(self.debugContainer);
+
+			$(self).on('debug', function (event, message) {
+				self.debug(message);
+			});
 		}
 	};
 
@@ -109,20 +120,24 @@ define(['jquery', 'window', 'Evoweb/CaptureDevice'], function ($, root, CaptureD
 	 * Debug the message in an container
 	 *
 	 * @param {string} message
-	 * @param {int} code
 	 * @return void
 	 */
-	BarcodeScanner.prototype.debug = function (message, code) {
+	BarcodeScanner.prototype.debug = function (message) {
 		if (this.debugContainer !== false) {
-			this.debugContainer.html(message.replace('%d', code));
+			this.debugContainer.html(message);
 		}
 	};
 
+	/**
+	 * Removes elements and deletes capture device
+	 *
+	 * @return void
+	 */
 	BarcodeScanner.prototype.shutDownControl = function () {
 		var message = 'No webcam available to capture from.';
 
 		if (this.debugContainer) {
-			this.debug(message, 0);
+			this.debug(message);
 			return;
 		}
 
@@ -141,7 +156,7 @@ define(['jquery', 'window', 'Evoweb/CaptureDevice'], function ($, root, CaptureD
 	BarcodeScanner.prototype.addStartStopButton = function () {
 		var self = this,
 			$startStop = $('<button class="startStop">Toggle video</button>').on('click', function () {
-			if (!self.streamRunning) {
+			if (!self.captureDevice.isCapturing()) {
 				self.captureDevice.start();
 			} else {
 				self.captureDevice.stop();
@@ -158,9 +173,9 @@ define(['jquery', 'window', 'Evoweb/CaptureDevice'], function ($, root, CaptureD
 	 *
 	 * @return void
 	 */
-	BarcodeScanner.prototype.updateCanvas = function () {
+	BarcodeScanner.prototype.updateCanvas = function (video) {
 		this.context.drawImage(
-			self.captureDevice.getImage(),
+			video,
 			0,
 			0,
 			this.canvas.width(),
@@ -171,7 +186,6 @@ define(['jquery', 'window', 'Evoweb/CaptureDevice'], function ($, root, CaptureD
 	function initialize() {
 		return new BarcodeScanner();
 	}
-
 	initialize();
 
 	return BarcodeScanner;

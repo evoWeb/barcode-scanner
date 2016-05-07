@@ -1,39 +1,30 @@
 define(['jquery', 'window'], function ($, root) {
-	function CaptureDevice(barcodeScanner) {
+	function CaptureDevice(barcodeScanner, width, height) {
 		this.barcodeScanner = barcodeScanner;
-		this.container = null;
 
-		this.video = null;
 		// variable will contain stream object once its captured
 		this.stream = null;
-		this.streamRunning = null;
+		this.streamRunning = false;
 
+		// capture interval related values
 		this.captureInterval = 0;
 		this.captureIntervalLength = 40;
 
-		this.getVideo();
+		// HTMLElement to capture stream with
+		this.video = this.initializeVideo(width, height);
 	}
 
 	/**
 	 * Create video element that is not attached to the dom to only be able to
 	 * captcha the stream for usage in canvas
 	 *
-	 * @return void
-	 */
-	CaptureDevice.prototype.getVideo = function () {
-		var $video = $('<video/>')
-			.attr('width', this.barcodeScanner.container.width())
-			.attr('height', this.barcodeScanner.container.height());
-		this.video = $video[0];
-	};
-
-	/**
-	 * Returns the video element to be drawn on canvas
-	 *
 	 * @return HTMLElement
 	 */
-	CaptureDevice.prototype.getImage = function () {
-		return this.video;
+	CaptureDevice.prototype.initializeVideo = function (width, height) {
+		var $video = $('<video/>')
+			.attr('width', width)
+			.attr('height', height);
+		return $video[0];
 	};
 
 	/**
@@ -69,8 +60,8 @@ define(['jquery', 'window'], function ($, root) {
 				self.startCanvasUpdateInterval();
 			},
 			function (error) {
-				self.barcodeScanner.debug('Video capture error: %d', error.code);
-				self.barcodeScanner.shutDownControl();
+				$(self.barcodeScanner).trigger('debug', [ 'Video capture error: ' + error.name ]);
+				$(self.barcodeScanner).trigger('shutdown');
 			}
 		);
 	};
@@ -84,9 +75,20 @@ define(['jquery', 'window'], function ($, root) {
 
 		this.video.pause();
 
-		this.stream.getTracks()[0].stop();
+		this.stream.getTracks().forEach(function (track) {
+			track.stop();
+		});
 
 		this.streamRunning = false;
+	};
+
+	/**
+	 * Returns if the stream running flag is set or not
+	 *
+	 * @returns boolean
+	 */
+	CaptureDevice.prototype.isCapturing = function () {
+		return this.streamRunning;
 	};
 
 	/**
@@ -95,9 +97,11 @@ define(['jquery', 'window'], function ($, root) {
 	 * @return void
 	 */
 	CaptureDevice.prototype.startCanvasUpdateInterval = function () {
-		this.captureInterval = setInterval(
-			this.triggerCaptureEvent,
-			this.captureIntervalLength
+		var self = this;
+
+		self.captureInterval = setInterval(
+			function () { self.triggerCaptureEvent(); },
+			self.captureIntervalLength
 		);
 	};
 
@@ -110,8 +114,13 @@ define(['jquery', 'window'], function ($, root) {
 		clearInterval(this.captureInterval);
 	};
 
+	/**
+	 * Triggers custom event on barcodeScanner with video as argument
+	 *
+	 * @return void
+	 */
 	CaptureDevice.prototype.triggerCaptureEvent = function () {
-		console.log('test');
+		$(this.barcodeScanner).trigger('videoCaptured', [ this.video ]);
 	};
 
 	return CaptureDevice;
