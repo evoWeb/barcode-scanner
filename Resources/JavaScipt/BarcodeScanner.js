@@ -19,10 +19,6 @@ define(['jquery', 'window', 'Evoweb/CaptureDevice', 'Evoweb/Display'], function 
 			this.container.width(),
 			this.container.height()
 		);
-
-		if (this.data['autostart'] === 1) {
-			this.captureDevice.start();
-		}
 	}
 
 

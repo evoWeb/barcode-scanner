@@ -12,6 +12,10 @@ define(['jquery'], function ($) {
 
 		// HTMLElement to capture stream with
 		this.fixture = this.initializeFixture(width, height, this.barcodeScanner.data['test']);
+
+		if (this.barcodeScanner.data['autostart'] === 1) {
+			this.start();
+		}
 	}
 
 	/**

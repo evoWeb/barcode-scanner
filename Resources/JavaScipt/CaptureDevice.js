@@ -14,6 +14,10 @@ define(['jquery', 'window'], function ($, root) {
 
 		// HTMLElement to capture stream with
 		this.video = this.initializeVideo(width, height);
+
+		if (this.barcodeScanner.data['autostart'] === 1) {
+			this.start();
+		}
 	}
 
 	/**
