@@ -3,8 +3,13 @@ requirejs.config({
 	urlArgs: 'now=' + Date.now(),
 	paths: {
 		jquery: '../../node_modules/jquery/dist/jquery.min',
-		'Evoweb\/Test': '../../Tests',
+		'Evoweb\/Tests': '../../Tests',
 		'Evoweb': '.'
+	},
+	mao: {
+		'Evoweb/BarcodeScanner': {
+			'Evoweb/CaptureDevice': 'Evoweb/Test/CaptureDevice'
+		}
 	}
 });
 requirejs(['Evoweb/BarcodeScanner']);

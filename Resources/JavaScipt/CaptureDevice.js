@@ -10,9 +10,24 @@ define(['jquery', 'window'], function ($, root) {
 		this.captureInterval = 0;
 		this.captureIntervalLength = 40;
 
+		this.initializeGetUserMedia();
+
 		// HTMLElement to capture stream with
 		this.video = this.initializeVideo(width, height);
 	}
+
+	/**
+	 * initialization of getUserMedia in navigator to be able to use it with
+	 * unified api
+	 *
+	 * @return void
+	 */
+	CaptureDevice.prototype.initializeGetUserMedia = function () {
+		navigator.getUserMedia = navigator.getUserMedia ||
+			navigator.webkitGetUserMedia ||
+			navigator.mozGetUserMedia ||
+			navigator.msGetUserMedia;
+	};
 
 	/**
 	 * Create video element that is not attached to the dom to only be able to

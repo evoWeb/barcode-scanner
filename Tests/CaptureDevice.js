@@ -1,4 +1,4 @@
-define(['jquery', 'window'], function ($, root) {
+define(['jquery'], function ($) {
 	function CaptureDevice(barcodeScanner, width, height) {
 		this.barcodeScanner = barcodeScanner;
 
@@ -11,7 +11,7 @@ define(['jquery', 'window'], function ($, root) {
 		this.captureIntervalLength = 40 * 10000;
 
 		// HTMLElement to capture stream with
-		this.fixture = this.initializeFixture(width, height, this.barcodeScanner.container.data('test'));
+		this.fixture = this.initializeFixture(width, height, this.barcodeScanner.data['test']);
 	}
 
 	/**
@@ -21,10 +21,35 @@ define(['jquery', 'window'], function ($, root) {
 	 * @return HTMLElement
 	 */
 	CaptureDevice.prototype.initializeFixture = function (width, height, imageUrl) {
-		var $fixture = $('<img/>')
-			.attr('src', imageUrl)
-			.attr('width', width)
-			.attr('height', height);
+		var $img = $('<img/>')
+				.css('opacity', 0)
+				.attr('src', imageUrl),
+			$fixture = $('<canvas/>')
+				.attr('width', width)
+				.attr('height', height);
+		this.barcodeScanner.container.after($img);
+
+		// get the smallest multiplier to reduce the image equal in height and
+		// width to fit into the detection area
+		var heightMultiplier = width / $img.width(),
+			widthMultiplier = height / $img.height(),
+			multiplier = heightMultiplier < widthMultiplier ? heightMultiplier : widthMultiplier;
+
+		var paddingImageX = width * 0.15,
+			paddingImageY = height * 0.15,
+			canvasImageWidth = (($img.width() * multiplier) - (paddingImageX * 2)),
+			canvasImageHeight = (($img.height() * multiplier) - (paddingImageY * 2)),
+			canvasImageX = (width - canvasImageWidth) / 2,
+			canvasImageY = (height - canvasImageHeight) / 2;
+
+		$fixture[0].getContext('2d').drawImage(
+			$img[0],
+			canvasImageX,
+			canvasImageY,
+			canvasImageWidth,
+			canvasImageHeight
+		);
+
 		return $fixture[0];
 	};
 
@@ -43,7 +68,6 @@ define(['jquery', 'window'], function ($, root) {
 		this.streamRunning = true;
 
 		this.triggerCaptureEvent();
-		this.startCanvasUpdateInterval();
 	};
 
 	/**
@@ -51,8 +75,6 @@ define(['jquery', 'window'], function ($, root) {
 	 * canvas and the stream running flag
 	 */
 	CaptureDevice.prototype.stop = function () {
-		this.stopCanvasUpdateInterval();
-
 		this.streamRunning = false;
 	};
 
@@ -63,29 +85,6 @@ define(['jquery', 'window'], function ($, root) {
 	 */
 	CaptureDevice.prototype.isCapturing = function () {
 		return this.streamRunning;
-	};
-
-	/**
-	 * Starts an interval which calls the update canvas method
-	 *
-	 * @return void
-	 */
-	CaptureDevice.prototype.startCanvasUpdateInterval = function () {
-		var self = this;
-
-		self.captureInterval = setInterval(
-			function () { self.triggerCaptureEvent(); },
-			self.captureIntervalLength
-		);
-	};
-
-	/**
-	 * Clears interval that calls the update canvas method
-	 *
-	 * @return void
-	 */
-	CaptureDevice.prototype.stopCanvasUpdateInterval = function () {
-		clearInterval(this.captureInterval);
 	};
 
 	/**
