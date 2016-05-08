@@ -2,17 +2,7 @@
 
 Either as RequireJS AMD module
 ```html
-<script src="node_modules/requirejs/require.js" type="text/javascript"></script>
-<script type="text/javascript">
-	requirejs.config({
-		baseUrl: 'Resources/JavaScipt',
-		paths: {
-			jquery: '../../node_modules/jquery/dist/jquery.min',
-			evoweb: '.'
-		}
-	});
-	requirejs(['evoweb/barcode']);
-</script>
+<script src="node_modules/requirejs/require.js" data-main="Resources/JavaScipt/app"></script>
 ```
 
 Or just as plain javascript version

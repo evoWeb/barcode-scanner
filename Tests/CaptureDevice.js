@@ -22,7 +22,12 @@ define(['jquery'], function ($) {
 	 */
 	CaptureDevice.prototype.initializeFixture = function (width, height, imageUrl) {
 		var $img = $('<img/>')
-				.css('opacity', 0)
+				.css({
+					opacity: 0,
+					position: 'absolute',
+					top: 0,
+					left: 0
+				})
 				.attr('src', imageUrl),
 			$fixture = $('<canvas/>')
 				.attr('width', width)

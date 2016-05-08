@@ -1,4 +1,4 @@
-define(['jquery', 'window'], function ($, root) {
+define(['jquery'], function ($) {
 	function Display(barcodeScanner, width, height, startStopCallback) {
 		this.barcodeScanner = barcodeScanner;
 		this.container = this.barcodeScanner.container;

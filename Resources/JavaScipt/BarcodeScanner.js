@@ -8,7 +8,6 @@ define(['jquery', 'window', 'Evoweb/CaptureDevice', 'Evoweb/Display'], function 
 
 		this.initializeDebug();
 
-
 		this.display = new Display(
 			this,
 			this.container.width(),
